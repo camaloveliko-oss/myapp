@@ -1,0 +1,166 @@
+import express from 'express';
+import axios from 'axios';
+import { verifyToken } from '../middleware/auth.js';
+
+const router = express.Router();
+
+// Chat endpoint - requires authentication
+router.post('/chat', verifyToken, async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({
+        success: false,
+        message: 'Prompt is required',
+      });
+    }
+
+    const provider = process.env.AI_PROVIDER || 'gemini';
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        success: false,
+        message: 'AI API key not configured',
+      });
+    }
+
+    // Call Gemini API
+    if (provider === 'gemini') {
+      try {
+        const geminiResponse = await axios.post(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+          {
+            contents: [
+              {
+                parts: [
+                  {
+                    text: prompt,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            params: {
+              key: apiKey,
+            },
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        const aiMessage =
+          geminiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+          'AI could not generate response';
+
+        return res.status(200).json({
+          success: true,
+          message: aiMessage,
+          prompt: prompt,
+          provider: provider,
+          userId: req.user.id,
+        });
+      } catch (apiError) {
+        console.error('Gemini API Error:', apiError.response?.data || apiError.message);
+        return res.status(500).json({
+          success: false,
+          message: 'Error calling Gemini API',
+          error: apiError.response?.data?.error?.message || apiError.message,
+        });
+      }
+    }
+
+    // Fallback response
+    const response = {
+      success: true,
+      message: 'Chat endpoint is ready',
+      prompt: prompt,
+      provider: provider,
+      userId: req.user.id,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error processing chat',
+      error: error.message,
+    });
+  }
+});
+
+// Location analysis endpoint
+router.post('/location-analysis', verifyToken, async (req, res) => {
+  try {
+    const { city, businessType, address } = req.body;
+
+    if (!city || !businessType) {
+      return res.status(400).json({
+        success: false,
+        message: 'City and businessType are required',
+      });
+    }
+
+    // TODO: Integrate with AI service for location analysis
+    const response = {
+      success: true,
+      message: 'Location analysis endpoint ready',
+      city,
+      businessType,
+      address,
+      userId: req.user.id,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Location analysis error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error analyzing location',
+      error: error.message,
+    });
+  }
+});
+
+// ROI calculation endpoint
+router.post('/roi', verifyToken, async (req, res) => {
+  try {
+    const { rent, averageTicket, margin = 0.35 } = req.body;
+
+    if (!rent || !averageTicket) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rent and averageTicket are required',
+      });
+    }
+
+    // Simple ROI calculation
+    const monthlyRevenue = averageTicket * 30; // Assuming 30 transactions per day
+    const monthlyProfit = monthlyRevenue * margin - rent;
+    const roi = (monthlyProfit / rent) * 100;
+
+    const response = {
+      success: true,
+      message: 'ROI calculated successfully',
+      monthlyRevenue,
+      monthlyProfit,
+      roi: roi.toFixed(2),
+      userId: req.user.id,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('ROI calculation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error calculating ROI',
+      error: error.message,
+    });
+  }
+});
+
+export default router;
