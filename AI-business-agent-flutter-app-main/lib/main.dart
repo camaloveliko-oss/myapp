@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -1384,7 +1387,9 @@ class DashboardScreen extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: AppSpacing.md,
                 crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: isWide ? 1.35 : 2.6,
+                // A taller mobile card prevents the subtitle from overflowing
+                // by a few pixels on narrow screens.
+                childAspectRatio: isWide ? 1.35 : 2.15,
                 children: cards,
               ),
               const SizedBox(height: AppSpacing.md),
@@ -1654,6 +1659,12 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      // Summary cards use a clean surface; the global card outline looked
+      // like an unrelated progress/divider line beneath each metric.
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        side: BorderSide.none,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
@@ -1897,7 +1908,9 @@ class _MapScreenState extends State<MapScreen> {
   static const LatLng _kazakhstanCenter = LatLng(48.0196, 66.9237);
 
   _CityPin? _selected;
+  _CityPin? _customPin;
   String _search = '';
+  bool _isSearching = false;
 
   List<_CityPin> get _visibleCities => _cities
       .where((city) => city.name.toLowerCase().contains(_search.toLowerCase()))
@@ -1912,6 +1925,51 @@ class _MapScreenState extends State<MapScreen> {
   void _focusCity(_CityPin city) {
     setState(() => _selected = city);
     _mapController.move(city.point, 6.2);
+  }
+
+  Future<void> _searchAddress() async {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) return;
+    setState(() => _isSearching = true);
+    try {
+      final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
+        'q': query,
+        'format': 'jsonv2',
+        'limit': '1',
+      });
+      final response = await http
+          .get(
+            uri,
+            headers: {
+              'User-Agent': 'AI-Business-Agent/1.0 (address search)',
+              'Accept-Language': 'az,en',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode != 200) throw Exception('Search failed');
+      final results = jsonDecode(response.body) as List<dynamic>;
+      if (results.isEmpty) throw Exception('Address not found');
+      final result = results.first as Map<String, dynamic>;
+      final lat = double.parse(result['lat'].toString());
+      final lon = double.parse(result['lon'].toString());
+      final pin = _CityPin(
+        name: (result['display_name'] ?? query).toString(),
+        point: LatLng(lat, lon),
+      );
+      if (!mounted) return;
+      setState(() {
+        _customPin = pin;
+        _selected = pin;
+      });
+      _mapController.move(pin.point, 15);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ünvan tapılmadı. Daha dəqiq yazın.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSearching = false);
+    }
   }
 
   @override
@@ -1937,11 +1995,22 @@ class _MapScreenState extends State<MapScreen> {
             TextField(
               controller: _searchController,
               onChanged: (value) => setState(() => _search = value),
-              decoration: const InputDecoration(
+              onSubmitted: (_) => _searchAddress(),
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search),
                 hintText: 'Şəhər və ya ünvan axtar...',
+                suffixIcon: IconButton(
+                  tooltip: 'Axtar',
+                  onPressed: _isSearching ? null : _searchAddress,
+                  icon: const Icon(Icons.arrow_forward),
+                ),
               ),
             ),
+            if (_isSearching)
+              const Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: LinearProgressIndicator(minHeight: 2),
+              ),
             const SizedBox(height: AppSpacing.sm),
             Card(
               child: Padding(
@@ -2040,36 +2109,50 @@ class _MapScreenState extends State<MapScreen> {
                               .toList(),
                         ),
                         MarkerLayer(
-                          markers: _cities.map((city) {
-                            final isSelected = _selected?.name == city.name;
-                            return Marker(
-                              point: city.point,
-                              width: isSelected ? 56 : 40,
-                              height: isSelected ? 56 : 40,
-                              alignment: Alignment.topCenter,
-                              child: GestureDetector(
-                                onTap: () => _focusCity(city),
-                                child: AnimatedScale(
-                                  scale: isSelected ? 1.15 : 1.0,
-                                  duration: const Duration(milliseconds: 150),
-                                  child: Icon(
-                                    Icons.location_on,
-                                    color: isSelected
-                                        ? AppColors.secondary
-                                        : scheme.primary,
-                                    size: isSelected ? 42 : 34,
-                                    shadows: const [
-                                      Shadow(
-                                        color: Colors.black38,
-                                        blurRadius: 6,
-                                        offset: Offset(0, 2),
-                                      ),
-                                    ],
+                          markers: [
+                            ..._cities.map((city) {
+                              final isSelected = _selected?.name == city.name;
+                              return Marker(
+                                point: city.point,
+                                width: isSelected ? 56 : 40,
+                                height: isSelected ? 56 : 40,
+                                alignment: Alignment.topCenter,
+                                child: GestureDetector(
+                                  onTap: () => _focusCity(city),
+                                  child: AnimatedScale(
+                                    scale: isSelected ? 1.15 : 1.0,
+                                    duration: const Duration(milliseconds: 150),
+                                    child: Icon(
+                                      Icons.location_on,
+                                      color: isSelected
+                                          ? AppColors.secondary
+                                          : scheme.primary,
+                                      size: isSelected ? 42 : 34,
+                                      shadows: const [
+                                        Shadow(
+                                          color: Colors.black38,
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
+                              );
+                            }).toList(),
+                            if (_customPin != null)
+                              Marker(
+                                point: _customPin!.point,
+                                width: 64,
+                                height: 64,
+                                alignment: Alignment.topCenter,
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Colors.red,
+                                  size: 46,
+                                ),
                               ),
-                            );
-                          }).toList(),
+                          ],
                         ),
                         RichAttributionWidget(
                           alignment: AttributionAlignment.bottomRight,
