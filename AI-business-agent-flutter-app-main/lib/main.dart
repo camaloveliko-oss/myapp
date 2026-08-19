@@ -655,6 +655,54 @@ class _AiBusinessAgentAppState extends State<AiBusinessAgentApp> {
   }
 }
 
+class LocationAnalysisController extends ChangeNotifier {
+  final BusinessApiService _service = BusinessApiService();
+  Map<String, dynamic>? analysis;
+  bool isAnalyzing = false;
+
+  Future<void> analyze({
+    required String city,
+    required String businessType,
+    String address = '',
+  }) async {
+    isAnalyzing = true;
+    notifyListeners();
+    try {
+      analysis = await _service.analyze2GisLocation(
+        city: city,
+        businessType: businessType,
+        address: address,
+      );
+    } finally {
+      isAnalyzing = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> analyzeFromPrompt(String prompt) async {
+    final normalized = prompt.toLowerCase();
+    const locationSignals = [
+      'məkan', 'ünvan', 'şəhər', 'biznes', 'kafe', 'restoran', 'rəqib', 'trafik',
+      'место', 'адрес', 'город', 'бизнес', 'кафе', 'конкурент', 'трафик',
+      'орын', 'қала', 'бәсекелес',
+    ];
+    if (!locationSignals.any(normalized.contains)) return;
+
+    const cities = ['Astana', 'Almaty', 'Shymkent', 'Aktau'];
+    final city = cities.firstWhere(
+      (item) => normalized.contains(item.toLowerCase()),
+      orElse: () => prompt.trim(),
+    );
+    try {
+      await analyze(city: city, businessType: prompt, address: prompt);
+    } catch (_) {
+      // Chat remains usable when a free-form prompt is not a 2GIS address.
+    }
+  }
+
+  Map<String, dynamic>? get contextForAi => analysis;
+}
+
 class HomeShell extends StatefulWidget {
   const HomeShell({
     super.key,
@@ -672,7 +720,9 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  int _selectedIndex = 0;
+  final LocationAnalysisController _locationController =
+      LocationAnalysisController();
+  int _selectedIndex = 2;
   bool _authenticated = false;
   bool _showNotifications = false;
 
@@ -681,6 +731,12 @@ class _HomeShellState extends State<HomeShell> {
     'Aşağıdakı AI tapşırığınız üçün təklif hazırdır.',
     'Demo bildiriş: yeni şablon əlavə edildi.',
   ];
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -748,8 +804,8 @@ class _HomeShellState extends State<HomeShell> {
               index: _selectedIndex,
               children: [
                 DashboardScreen(),
-                MapScreen(),
-                ChatScreen(),
+                MapScreen(controller: _locationController),
+                ChatScreen(controller: _locationController),
                 ProfileScreen(
                   onLocaleChanged: widget.onLocaleChanged,
                   currentLocaleCode: widget.currentLocaleCode,
@@ -1950,7 +2006,9 @@ class _CityPin {
 }
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  const MapScreen({super.key, required this.controller});
+
+  final LocationAnalysisController controller;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -1973,16 +2031,24 @@ class _MapScreenState extends State<MapScreen> {
   _CityPin? _customPin;
   String _search = '';
   bool _isSearching = false;
-  bool _isAnalyzing = false;
-  Map<String, dynamic>? _analysis;
-  final BusinessApiService _businessApi = BusinessApiService();
 
   List<_CityPin> get _visibleCities => _cities
       .where((city) => city.name.toLowerCase().contains(_search.toLowerCase()))
       .toList();
 
   @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onControllerChanged);
+  }
+
+  void _onControllerChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    widget.controller.removeListener(_onControllerChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -1994,25 +2060,17 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _refreshAnalysis(_CityPin pin) async {
-    setState(() {
-      _isAnalyzing = true;
-      _analysis = null;
-    });
     try {
-      final analysis = await _businessApi.analyze2GisLocation(
+      await widget.controller.analyze(
         city: pin.name,
         businessType: 'business',
         address: pin.name,
       );
-      if (!mounted) return;
-      setState(() => _analysis = analysis);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context).t('analysisUnavailable'))),
       );
-    } finally {
-      if (mounted) setState(() => _isAnalyzing = false);
     }
   }
 
@@ -2112,28 +2170,28 @@ class _MapScreenState extends State<MapScreen> {
                   children: [
                     _Metric(
                       label: loc.t('locationIndex'),
-                      value: _analysis?['score'] == null
+                        value: widget.controller.analysis?['score'] == null
                           ? '--'
-                          : '${_analysis!['score']}/100',
+                          : '${widget.controller.analysis!['score']}/100',
                       color: scheme.primary,
                     ),
                     _Metric(
                       label: loc.t('footTraffic'),
-                      value: _isAnalyzing
+                        value: widget.controller.isAnalyzing
                           ? loc.t('analyzing')
-                          : (_analysis?['pedestrian_traffic'] ?? '--').toString(),
+                          : (widget.controller.analysis?['pedestrian_traffic'] ?? '--').toString(),
                       color: AppColors.secondary,
                     ),
                     _Metric(
                       label: loc.t('competitors'),
-                      value: (_analysis?['competitors_500m'] ?? '--').toString(),
+                      value: (widget.controller.analysis?['competitors_500m'] ?? '--').toString(),
                       color: const Color(0xFFF59E0B),
                     ),
                     _Metric(
                       label: loc.t('nearestDistance'),
-                      value: _analysis?['nearest_competitor_meters'] == null
+                        value: widget.controller.analysis?['nearest_competitor_meters'] == null
                           ? '--'
-                          : '${_analysis!['nearest_competitor_meters']} m',
+                          : '${widget.controller.analysis!['nearest_competitor_meters']} m',
                       color: scheme.primary,
                     ),
                   ],
@@ -2446,7 +2504,9 @@ class _Metric extends StatelessWidget {
 // CHAT
 // ============================================================
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  const ChatScreen({super.key, required this.controller});
+
+  final LocationAnalysisController controller;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -2534,7 +2594,11 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
 
     try {
-      final answer = await _aiService.generateResponse(prompt);
+      await widget.controller.analyzeFromPrompt(prompt);
+      final answer = await _aiService.generateResponse(
+        prompt,
+        locationContext: widget.controller.contextForAi,
+      );
       if (!mounted) return;
       setState(() {
         _messages.add(_ChatMessage(author: 'assistant', text: answer));

@@ -13,24 +13,27 @@ class AiService {
     _authToken = token;
   }
 
-  Future<String> generateResponse(String prompt) async {
+  Future<String> generateResponse(
+    String prompt, {
+    Map<String, dynamic>? locationContext,
+  }) async {
     final normalizedPrompt = prompt.trim();
     if (normalizedPrompt.isEmpty) {
       return 'Please enter a request for the AI assistant.';
     }
 
-    if (_authToken.isEmpty) {
-      return 'Authentication required. Please login first.';
-    }
-
     try {
+      final headers = <String, String>{'Content-Type': 'application/json'};
+      if (_authToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $_authToken';
+      }
       final response = await http.post(
         Uri.parse('${ApiConfig.backendUrl}/api/chat'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
-        body: jsonEncode({'prompt': normalizedPrompt}),
+        headers: headers,
+        body: jsonEncode({
+          'prompt': normalizedPrompt,
+          if (locationContext != null) 'location_context': locationContext,
+        }),
       );
 
       if (response.statusCode == 200) {

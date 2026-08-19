@@ -19,3 +19,15 @@ services:
         sync: false
       - key: TWOGIS_API_KEY
         sync: false
+  - type: web
+    name: ai-business-agent-analysis
+    runtime: python
+    rootDir: AI-business-agent-flutter-app-main
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: TWOGIS_API_KEY
+        sync: false

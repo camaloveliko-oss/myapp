@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -89,7 +89,7 @@ def chat(payload: ChatRequest | None = None, prompt: str | None = None):
     effective_prompt = prompt or (payload.prompt if payload else "")
     provider = os.getenv("AI_PROVIDER", "gemini").lower()
     if provider == "gemini" and os.getenv("GEMINI_API_KEY"):
-        endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+        endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent"
         response = httpx.post(
             endpoint,
             params={"key": os.environ["GEMINI_API_KEY"]},
@@ -99,7 +99,7 @@ def chat(payload: ChatRequest | None = None, prompt: str | None = None):
         response.raise_for_status()
         data = response.json()
         text = data["candidates"][0]["content"]["parts"][0]["text"]
-        return {"response": text, "model": "gemini-1.5-flash", "prompt": effective_prompt}
+        return {"response": text, "model": "gemini-3.6-flash", "prompt": effective_prompt}
 
     if provider == "openai" and os.getenv("OPENAI_API_KEY"):
         response = httpx.post(
@@ -124,13 +124,33 @@ def chat(payload: ChatRequest | None = None, prompt: str | None = None):
 @app.post("/analysis/location")
 def location_analysis(payload: LocationAnalysisRequest):
     search = payload.address.strip() or payload.city.strip()
-    locations = _two_gis_items(search)
+    if not search:
+        raise HTTPException(status_code=400, detail="city or address is required")
+    try:
+        locations = _two_gis_items(search)
+    except RuntimeError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except httpx.HTTPStatusError as error:
+        provider_status = error.response.status_code
+        raise HTTPException(
+            status_code=502,
+            detail=f"2GIS API returned HTTP {provider_status}",
+        ) from error
+    except httpx.HTTPError as error:
+        raise HTTPException(status_code=502, detail="2GIS API request failed") from error
     if not locations or not _point(locations[0]):
-        return {"error": "2GIS could not resolve this location"}
+        raise HTTPException(status_code=404, detail="2GIS could not resolve this location")
 
     selected_point = _point(locations[0])
     assert selected_point is not None
-    competitors = _two_gis_items(payload.business_type.strip() or "business", point=selected_point, radius=500)
+    try:
+        competitors = _two_gis_items(
+            payload.business_type.strip() or "business",
+            point=selected_point,
+            radius=500,
+        )
+    except httpx.HTTPError as error:
+        raise HTTPException(status_code=502, detail="2GIS competitor search failed") from error
     distances = [
         _distance_meters(selected_point, competitor_point)
         for competitor in competitors

@@ -45,6 +45,10 @@ The health response must contain `"status":"ok"` before login/register can
 work. A `503` response means the Node server is running but MongoDB is not
 connected yet.
 
+Location analysis is a separate FastAPI service on port `8000` and requires
+`TWOGIS_API_KEY`. Deploy both services from the root `render.yaml`, then pass
+the analysis service URL to Flutter as `TOCHKA_API_BASE_URL`.
+
 ## Deploy the auth backend
 
 The repository includes `backend/render.yaml` for Render. Create a MongoDB

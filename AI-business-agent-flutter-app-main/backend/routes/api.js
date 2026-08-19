@@ -4,10 +4,10 @@ import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Chat endpoint - requires authentication
-router.post('/chat', verifyToken, async (req, res) => {
+// Chat endpoint supports guests; other analysis endpoints remain protected.
+router.post('/chat', async (req, res) => {
   try {
-    const { prompt } = req.body;
+    const { prompt, location_context: locationContext } = req.body;
 
     if (!prompt) {
       return res.status(400).json({
@@ -26,17 +26,22 @@ router.post('/chat', verifyToken, async (req, res) => {
       });
     }
 
+    const contextText = locationContext
+      ? `\n\nCurrent live 2GIS location analysis:\n${JSON.stringify(locationContext)}`
+      : '';
+    const groundedPrompt = `${prompt}${contextText}`;
+
     // Call Gemini API
     if (provider === 'gemini') {
       try {
         const geminiResponse = await axios.post(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent',
           {
             contents: [
               {
                 parts: [
                   {
-                    text: prompt,
+                    text: groundedPrompt,
                   },
                 ],
               },
@@ -59,9 +64,9 @@ router.post('/chat', verifyToken, async (req, res) => {
         return res.status(200).json({
           success: true,
           message: aiMessage,
-          prompt: prompt,
+          prompt: groundedPrompt,
           provider: provider,
-          userId: req.user.id,
+          userId: req.user?.id || null,
         });
       } catch (apiError) {
         console.error('Gemini API Error:', apiError.response?.data || apiError.message);
@@ -77,9 +82,9 @@ router.post('/chat', verifyToken, async (req, res) => {
     const response = {
       success: true,
       message: 'Chat endpoint is ready',
-      prompt: prompt,
+      prompt: groundedPrompt,
       provider: provider,
-      userId: req.user.id,
+      userId: req.user?.id || null,
     };
 
     res.status(200).json(response);

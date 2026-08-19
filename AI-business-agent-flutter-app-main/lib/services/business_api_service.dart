@@ -55,7 +55,16 @@ class BusinessApiService {
       body: jsonEncode(body),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('API ${response.statusCode}: ${response.body}');
+      String message = response.body;
+      try {
+        final error = jsonDecode(response.body);
+        if (error is Map<String, dynamic> && error['detail'] is String) {
+          message = error['detail'] as String;
+        }
+      } catch (_) {
+        // Keep the raw response when the server does not return JSON.
+      }
+      throw Exception('API ${response.statusCode}: $message');
     }
     final decoded = jsonDecode(response.body);
     return decoded is Map<String, dynamic> ? decoded : {'data': decoded};
