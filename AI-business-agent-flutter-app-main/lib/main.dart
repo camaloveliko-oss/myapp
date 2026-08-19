@@ -11,6 +11,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'services/ai_service.dart';
 import 'services/report_service.dart';
 import 'services/mongo_auth_service.dart';
+import 'services/business_api_service.dart';
+import 'config/api_config.dart';
 
 void main() {
   runApp(const AiBusinessAgentApp());
@@ -126,6 +128,23 @@ class AppLocalizations extends InheritedWidget {
       'openInMaps': 'İstiqamət al',
       'businessHotspot': 'İş imkanı bölgəsi',
       'noNotifications': 'Yeni bildiriş yoxdur',
+      'navDashboard': 'Panel', 'navMap': 'Xəritə', 'navAssistant': 'Assistant', 'navProfile': 'Profil',
+      'free': 'PULSUZ', 'nextIdeaTitle': 'Tochka.ai ilə növbəti məkanınızı risk etmədən seçin',
+      'nextIdeaSubtitle': 'İdeyanızı, büdcənizi və regionu yoxlayın. Sonra ən güclü 3 ünvanı müqayisə edin.',
+      'analysisStart': 'Analizə necə başlayaq?', 'idea': 'İdeya', 'place': 'Məkan', 'decision': 'Qərar',
+      'deepAnalytics': 'İlkin dərin analitika', 'viabilityForecast': 'Yaşama qabiliyyəti — ilk fəaliyyət ilində proqnoz',
+      'riskSimilarBusinesses': '500 m radiusda 6 analoji biznes var', 'riskVisibility': 'Giriş görünürlüğünü sahədə yoxlayın',
+      'unlockRisks': '2 kritik riski və tam hesablamanı aç', 'calculatorTitle': 'Xərcini çıxarma kalkulyatoru',
+      'monthlyRent': 'Aylıq icarə (₸)', 'averageTicket': 'Orta çek (₸)', 'calculate': 'Hesabla',
+      'customersNeeded': 'Mənfəətə çıxmaq üçün gündə təxminən {count} alıcı lazımdır.', 'plansTitle': 'Tochka.ai tarifləri',
+      'planFreeSubtitle': 'Üçfaktorlu çat + xəritə + məkan balı', 'planOneSubtitle': 'Tam analiz + PDF + danışıqlar mətni',
+      'planThreeSubtitle': 'Yanaşı müqayisə ilə tam analiz', 'continue': 'Davam et',
+      'searchAddressHint': 'Şəhər və ya ünvan axtar...', 'search': 'Axtar', 'addressNotFound': 'Ünvan tapılmadı. Daha dəqiq yazın.',
+      'locationIndex': 'Məkan indeksi', 'footTraffic': 'Piyada trafiki', 'high': 'Yüksək', 'competitors': 'Rəqiblər (500 m)', 'nearestDistance': 'Ən yaxın rəqib', 'analysisUnavailable': '2GIS analizi əlçatan deyil', 'analyzing': 'Analiz edilir...',
+      'locationPassport': 'PDF Məkan Pasportu', 'whatsappNegotiation': 'WhatsApp danışıqlar mətni',
+      'stopListening': 'Dinləməni dayandır', 'voiceInput': 'Səslə yaz', 'smsEmailWhatsapp': 'SMS, E-poçt, WhatsApp', 'languageEnglish': 'English',
+      'personaBaba': 'Müdrik Baba', 'personaBabaHint': 'Riskləri azaldır', 'personaMarketer': 'Kreativ Marketoloq', 'personaMarketerHint': 'Fərqlənməyə kömək edir', 'personaAnalyst': 'Sərt Analitik', 'personaAnalystHint': 'Quru rəqəmlər və ROI',
+      'assistantWelcome': 'Salam! Mən Müdrik Baba — biznes ideyanı və seçdiyin məkanı üç faktorlu yoxlama ilə analiz edəcəyəm. Başlayaq: hansı biznesi açmaq istəyirsən və hansı şəhərdə?',
     },
     'en': {
       'appTitle': 'AI Business Agent',
@@ -199,6 +218,23 @@ class AppLocalizations extends InheritedWidget {
       'openInMaps': 'Get directions',
       'businessHotspot': 'Business opportunity area',
       'noNotifications': 'No new notifications',
+      'navDashboard': 'Dashboard', 'navMap': 'Map', 'navAssistant': 'Assistant', 'navProfile': 'Profile',
+      'free': 'FREE', 'nextIdeaTitle': 'Choose your next location with Tochka.ai without unnecessary risk',
+      'nextIdeaSubtitle': 'Check your idea, budget and region, then compare the strongest 3 locations.',
+      'analysisStart': 'How should we start the analysis?', 'idea': 'Idea', 'place': 'Location', 'decision': 'Decision',
+      'deepAnalytics': 'Initial deep analytics', 'viabilityForecast': 'Viability forecast for the first year of operation',
+      'riskSimilarBusinesses': '6 similar businesses within a 500 m radius', 'riskVisibility': 'Check entrance visibility on site',
+      'unlockRisks': 'Unlock 2 critical risks and the full calculation', 'calculatorTitle': 'Break-even calculator',
+      'monthlyRent': 'Monthly rent (₸)', 'averageTicket': 'Average ticket (₸)', 'calculate': 'Calculate',
+      'customersNeeded': 'You need approximately {count} customers per day to break even.', 'plansTitle': 'Tochka.ai plans',
+      'planFreeSubtitle': 'Three-factor chat + map + location score', 'planOneSubtitle': 'Full analysis + PDF + negotiation text',
+      'planThreeSubtitle': 'Full analysis with side-by-side comparison', 'continue': 'Continue',
+      'searchAddressHint': 'Search city or address...', 'search': 'Search', 'addressNotFound': 'Address not found. Please be more specific.',
+      'locationIndex': 'Location index', 'footTraffic': 'Foot traffic', 'high': 'High', 'competitors': 'Competitors (500 m)', 'nearestDistance': 'Nearest competitor', 'analysisUnavailable': '2GIS analysis unavailable', 'analyzing': 'Analyzing...',
+      'locationPassport': 'PDF location passport', 'whatsappNegotiation': 'WhatsApp negotiation text',
+      'stopListening': 'Stop listening', 'voiceInput': 'Voice input', 'smsEmailWhatsapp': 'SMS, Email, WhatsApp', 'languageEnglish': 'English',
+      'personaBaba': 'Wise Baba', 'personaBabaHint': 'Reduces risk', 'personaMarketer': 'Creative Marketer', 'personaMarketerHint': 'Helps you stand out', 'personaAnalyst': 'Strict Analyst', 'personaAnalystHint': 'Dry numbers and ROI',
+      'assistantWelcome': 'Hello! I am Wise Baba. I will analyze your business idea and chosen location using a three-factor check. Let us begin: what business do you want to open and in which city?',
     },
     'ru': {
       'appTitle': 'AI Бизнес Агент',
@@ -276,6 +312,23 @@ class AppLocalizations extends InheritedWidget {
       'openInMaps': 'Построить маршрут',
       'businessHotspot': 'Зона деловых возможностей',
       'noNotifications': 'Новых уведомлений нет',
+      'navDashboard': 'Панель', 'navMap': 'Карта', 'navAssistant': 'Ассистент', 'navProfile': 'Профиль',
+      'free': 'БЕСПЛАТНО', 'nextIdeaTitle': 'Выберите следующую локацию с Tochka.ai без лишнего риска',
+      'nextIdeaSubtitle': 'Проверьте идею, бюджет и регион, затем сравните 3 лучшие локации.',
+      'analysisStart': 'Как начнём анализ?', 'idea': 'Идея', 'place': 'Место', 'decision': 'Решение',
+      'deepAnalytics': 'Первичная глубокая аналитика', 'viabilityForecast': 'Прогноз жизнеспособности в первый год работы',
+      'riskSimilarBusinesses': '6 похожих бизнесов в радиусе 500 м', 'riskVisibility': 'Проверьте видимость входа на месте',
+      'unlockRisks': 'Открыть 2 критических риска и полный расчёт', 'calculatorTitle': 'Калькулятор окупаемости',
+      'monthlyRent': 'Аренда в месяц (₸)', 'averageTicket': 'Средний чек (₸)', 'calculate': 'Рассчитать',
+      'customersNeeded': 'Для выхода в прибыль нужно примерно {count} клиентов в день.', 'plansTitle': 'Тарифы Tochka.ai',
+      'planFreeSubtitle': 'Трёхфакторный чат + карта + оценка места', 'planOneSubtitle': 'Полный анализ + PDF + текст переговоров',
+      'planThreeSubtitle': 'Полный анализ со сравнением рядом', 'continue': 'Продолжить',
+      'searchAddressHint': 'Поиск города или адреса...', 'search': 'Поиск', 'addressNotFound': 'Адрес не найден. Уточните запрос.',
+      'locationIndex': 'Индекс места', 'footTraffic': 'Пешеходный трафик', 'high': 'Высокий', 'competitors': 'Конкуренты (500 м)', 'nearestDistance': 'Ближайший конкурент', 'analysisUnavailable': 'Анализ 2GIS недоступен', 'analyzing': 'Анализируется...',
+      'locationPassport': 'PDF-паспорт места', 'whatsappNegotiation': 'Текст переговоров в WhatsApp',
+      'stopListening': 'Остановить прослушивание', 'voiceInput': 'Голосовой ввод', 'smsEmailWhatsapp': 'SMS, Email, WhatsApp', 'languageEnglish': 'English',
+      'personaBaba': 'Мудрый Баба', 'personaBabaHint': 'Снижает риски', 'personaMarketer': 'Креативный маркетолог', 'personaMarketerHint': 'Помогает выделиться', 'personaAnalyst': 'Строгий аналитик', 'personaAnalystHint': 'Точные цифры и ROI',
+      'assistantWelcome': 'Здравствуйте! Я Мудрый Баба. Я проанализирую вашу бизнес-идею и выбранное место по трём факторам. Начнём: какой бизнес вы хотите открыть и в каком городе?',
     },
     'kk': {
       'appTitle': 'AI Бизнес Агент',
@@ -351,6 +404,23 @@ class AppLocalizations extends InheritedWidget {
       'openInMaps': 'Бағыт алу',
       'businessHotspot': 'Бизнес мүмкіндігі аймағы',
       'noNotifications': 'Жаңа хабарландыру жоқ',
+      'navDashboard': 'Панель', 'navMap': 'Карта', 'navAssistant': 'Ассистент', 'navProfile': 'Профиль',
+      'free': 'ТЕГІН', 'nextIdeaTitle': 'Tochka.ai көмегімен келесі орынды тәуекелсіз таңдаңыз',
+      'nextIdeaSubtitle': 'Идеяңызды, бюджетіңізді және аймақты тексеріп, ең мықты 3 орынды салыстырыңыз.',
+      'analysisStart': 'Талдауды қалай бастаймыз?', 'idea': 'Идея', 'place': 'Орын', 'decision': 'Шешім',
+      'deepAnalytics': 'Алғашқы терең аналитика', 'viabilityForecast': 'Бірінші жұмыс жылына өміршеңдік болжамы',
+      'riskSimilarBusinesses': '500 м радиуста 6 ұқсас бизнес бар', 'riskVisibility': 'Кіреберіс көрінуін орнында тексеріңіз',
+      'unlockRisks': '2 маңызды тәуекел мен толық есептеуді ашу', 'calculatorTitle': 'Өтелімділік калькуляторы',
+      'monthlyRent': 'Айлық жалдау (₸)', 'averageTicket': 'Орташа чек (₸)', 'calculate': 'Есептеу',
+      'customersNeeded': 'Пайдаға шығу үшін күніне шамамен {count} клиент қажет.', 'plansTitle': 'Tochka.ai тарифтері',
+      'planFreeSubtitle': 'Үш факторлы чат + карта + орын бағасы', 'planOneSubtitle': 'Толық талдау + PDF + келіссөз мәтіні',
+      'planThreeSubtitle': 'Қатар салыстырумен толық талдау', 'continue': 'Жалғастыру',
+      'searchAddressHint': 'Қала немесе мекенжай іздеу...', 'search': 'Іздеу', 'addressNotFound': 'Мекенжай табылмады. Нақтырақ жазыңыз.',
+      'locationIndex': 'Орын индексі', 'footTraffic': 'Жаяу жүргінші трафигі', 'high': 'Жоғары', 'competitors': 'Бәсекелестер (500 м)', 'nearestDistance': 'Ең жақын бәсекелес', 'analysisUnavailable': '2GIS талдауы қолжетімсіз', 'analyzing': 'Талдануда...',
+      'locationPassport': 'PDF орын паспорты', 'whatsappNegotiation': 'WhatsApp келіссөз мәтіні',
+      'stopListening': 'Тыңдауды тоқтату', 'voiceInput': 'Дауыспен енгізу', 'smsEmailWhatsapp': 'SMS, Email, WhatsApp', 'languageEnglish': 'English',
+      'personaBaba': 'Дана Баба', 'personaBabaHint': 'Тәуекелді азайтады', 'personaMarketer': 'Креативті маркетолог', 'personaMarketerHint': 'Ерекшеленуге көмектеседі', 'personaAnalyst': 'Қатаң аналитик', 'personaAnalystHint': 'Нақты сандар және ROI',
+      'assistantWelcome': 'Сәлем! Мен Дана Бабамын. Бизнес идеяңыз бен таңдаған орныңызды үш фактор арқылы талдаймын. Бастайық: қай бизнесті қай қалада ашқыңыз келеді?',
     },
   };
 
@@ -606,25 +676,6 @@ class _HomeShellState extends State<HomeShell> {
   bool _authenticated = false;
   bool _showNotifications = false;
 
-  static const List<_NavItem> _navItems = [
-    _NavItem(
-      icon: Icons.space_dashboard_outlined,
-      selectedIcon: Icons.space_dashboard,
-      label: 'Dashboard',
-    ),
-    _NavItem(icon: Icons.map_outlined, selectedIcon: Icons.map, label: 'Map'),
-    _NavItem(
-      icon: Icons.chat_bubble_outline,
-      selectedIcon: Icons.chat_bubble,
-      label: 'Assistant',
-    ),
-    _NavItem(
-      icon: Icons.person_outline,
-      selectedIcon: Icons.person,
-      label: 'Profile',
-    ),
-  ];
-
   final List<String> _notifications = const [
     'Yeni sınaq bildirişi: hesabınız uğurla yaradıldı.',
     'Aşağıdakı AI tapşırığınız üçün təklif hazırdır.',
@@ -634,6 +685,12 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final navItems = [
+      _NavItem(icon: Icons.space_dashboard_outlined, selectedIcon: Icons.space_dashboard, label: loc.t('navDashboard')),
+      _NavItem(icon: Icons.map_outlined, selectedIcon: Icons.map, label: loc.t('navMap')),
+      _NavItem(icon: Icons.chat_bubble_outline, selectedIcon: Icons.chat_bubble, label: loc.t('navAssistant')),
+      _NavItem(icon: Icons.person_outline, selectedIcon: Icons.person, label: loc.t('navProfile')),
+    ];
 
     return Scaffold(
       appBar: _authenticated
@@ -679,7 +736,10 @@ class _HomeShellState extends State<HomeShell> {
         children: [
           if (!_authenticated)
             AuthScreen(
-              onAuthenticated: () => setState(() => _authenticated = true),
+              onAuthenticated: () => setState(() {
+                _authenticated = true;
+                _selectedIndex = 2;
+              }),
               onLocaleChanged: widget.onLocaleChanged,
               currentLocaleCode: widget.currentLocaleCode,
             ),
@@ -711,7 +771,7 @@ class _HomeShellState extends State<HomeShell> {
                 _selectedIndex = index;
                 _showNotifications = false;
               }),
-              destinations: _navItems
+              destinations: navItems
                   .map(
                     (item) => NavigationDestination(
                       icon: Icon(item.icon),
@@ -1307,7 +1367,7 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Tochka.ai ilə növbəti məkanınızı risk etmədən seçin',
+                      loc.t('nextIdeaTitle'),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -1319,7 +1379,7 @@ class DashboardScreen extends StatelessWidget {
                       size: 15,
                       color: scheme.primary,
                     ),
-                    label: const Text('FREE'),
+                    label: Text(loc.t('free')),
                     side: BorderSide.none,
                     backgroundColor: scheme.primary.withValues(alpha: 0.10),
                   ),
@@ -1327,7 +1387,7 @@ class DashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'İdeyanızı, büdcənizi və regionu yoxlayın. Sonra ən güclü 3 ünvanı müqayisə edin.',
+                loc.t('nextIdeaSubtitle'),
                 style: TextStyle(color: scheme.outline, height: 1.4),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -1338,7 +1398,7 @@ class DashboardScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Analizə necə başlayaq?',
+                        loc.t('analysisStart'),
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
@@ -1347,19 +1407,19 @@ class DashboardScreen extends StatelessWidget {
                         children: [
                           _MiniStep(
                             number: '1',
-                            label: 'İdeya',
+                            label: loc.t('idea'),
                             color: scheme.primary,
                           ),
                           _StepLine(color: scheme.primary),
                           _MiniStep(
                             number: '2',
-                            label: 'Məkan',
+                            label: loc.t('place'),
                             color: AppColors.secondary,
                           ),
                           _StepLine(color: AppColors.secondary),
                           _MiniStep(
                             number: '3',
-                            label: 'Qərar',
+                            label: loc.t('decision'),
                             color: const Color(0xFFF59E0B),
                           ),
                         ],
@@ -1403,7 +1463,7 @@ class DashboardScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              'İlkin dərin analitika',
+                              loc.t('deepAnalytics'),
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.w800),
                             ),
@@ -1429,7 +1489,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Yaşama qabiliyyəti — ilk fəaliyyət ilində proqnoz',
+                        loc.t('viabilityForecast'),
                         style: TextStyle(color: scheme.outline, fontSize: 12),
                       ),
                       const SizedBox(height: 12),
@@ -1445,23 +1505,23 @@ class DashboardScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      const _RiskRow(
+                      _RiskRow(
                         icon: Icons.warning_amber_rounded,
-                        text: '500 m radiusda 6 analoji biznes var',
+                        text: loc.t('riskSimilarBusinesses'),
                         color: Color(0xFFF59E0B),
                       ),
                       const SizedBox(height: 8),
-                      const _RiskRow(
+                      _RiskRow(
                         icon: Icons.visibility_outlined,
-                        text: 'Giriş görünürlüğünü sahədə yoxlayın',
+                        text: loc.t('riskVisibility'),
                         color: Color(0xFFEF4444),
                       ),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
                         onPressed: () => _showPlans(context),
                         icon: const Icon(Icons.lock_open_outlined, size: 17),
-                        label: const Text(
-                          '2 kritik riski və tam hesablamanı aç',
+                        label: Text(
+                          loc.t('unlockRisks'),
                         ),
                       ),
                     ],
@@ -1777,32 +1837,33 @@ class _QuickActionTile extends StatelessWidget {
 }
 
 void _showRoiCalculator(BuildContext context) {
+  final loc = AppLocalizations.of(context);
   final rent = TextEditingController(text: '800000');
   final ticket = TextEditingController(text: '3500');
   showDialog<void>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Xərcini çıxarma kalkulyatoru'),
+      title: Text(loc.t('calculatorTitle')),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: rent,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Aylıq icarə (₸)'),
+            decoration: InputDecoration(labelText: loc.t('monthlyRent')),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: ticket,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Orta çek (₸)'),
+            decoration: InputDecoration(labelText: loc.t('averageTicket')),
           ),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext),
-          child: const Text('Bağla'),
+          child: Text(loc.t('close')),
         ),
         FilledButton(
           onPressed: () {
@@ -1815,12 +1876,12 @@ void _showRoiCalculator(BuildContext context) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Mənfəətə çıxmaq üçün gündə təxminən ${((customers / 30).ceil())} alıcı lazımdır.',
+                  loc.t('customersNeeded').replaceFirst('{count}', '${((customers / 30).ceil())}'),
                 ),
               ),
             );
           },
-          child: const Text('Hesabla'),
+          child: Text(loc.t('calculate')),
         ),
       ],
     ),
@@ -1831,6 +1892,7 @@ void _showRoiCalculator(BuildContext context) {
 }
 
 void _showPlans(BuildContext context) {
+  final loc = AppLocalizations.of(context);
   showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -1842,33 +1904,33 @@ void _showPlans(BuildContext context) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tochka.ai tarifləri',
+              loc.t('plansTitle'),
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 12),
-            const ListTile(
+            ListTile(
               leading: Icon(Icons.lock_open),
-              title: Text('FREE'),
-              subtitle: Text('Üçfaktorlu çat + xəritə + məkan balı'),
+              title: Text(loc.t('free')),
+              subtitle: Text(loc.t('planFreeSubtitle')),
               trailing: Text('0 ₸'),
             ),
-            const ListTile(
+            ListTile(
               leading: Icon(Icons.location_on_outlined),
-              title: Text('1 NÖQTƏ'),
-              subtitle: Text('Tam analiz + PDF + danışıqlar mətni'),
+              title: Text('1 ${loc.t('place').toUpperCase()}'),
+              subtitle: Text(loc.t('planOneSubtitle')),
               trailing: Text('1 990 ₸'),
             ),
-            const ListTile(
+            ListTile(
               leading: Icon(Icons.layers_outlined),
-              title: Text('3 NÖQTƏ'),
-              subtitle: Text('Yanaşı müqayisə ilə tam analiz'),
+              title: Text('3 ${loc.t('place').toUpperCase()}'),
+              subtitle: Text(loc.t('planThreeSubtitle')),
               trailing: Text('4 900 ₸'),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Davam et'),
+              child: Text(loc.t('continue')),
             ),
           ],
         ),
@@ -1911,6 +1973,9 @@ class _MapScreenState extends State<MapScreen> {
   _CityPin? _customPin;
   String _search = '';
   bool _isSearching = false;
+  bool _isAnalyzing = false;
+  Map<String, dynamic>? _analysis;
+  final BusinessApiService _businessApi = BusinessApiService();
 
   List<_CityPin> get _visibleCities => _cities
       .where((city) => city.name.toLowerCase().contains(_search.toLowerCase()))
@@ -1922,9 +1987,33 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
-  void _focusCity(_CityPin city) {
+  Future<void> _focusCity(_CityPin city) async {
     setState(() => _selected = city);
     _mapController.move(city.point, 6.2);
+    await _refreshAnalysis(city);
+  }
+
+  Future<void> _refreshAnalysis(_CityPin pin) async {
+    setState(() {
+      _isAnalyzing = true;
+      _analysis = null;
+    });
+    try {
+      final analysis = await _businessApi.analyze2GisLocation(
+        city: pin.name,
+        businessType: 'business',
+        address: pin.name,
+      );
+      if (!mounted) return;
+      setState(() => _analysis = analysis);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).t('analysisUnavailable'))),
+      );
+    } finally {
+      if (mounted) setState(() => _isAnalyzing = false);
+    }
   }
 
   Future<void> _searchAddress() async {
@@ -1962,10 +2051,11 @@ class _MapScreenState extends State<MapScreen> {
         _selected = pin;
       });
       _mapController.move(pin.point, 15);
+      await _refreshAnalysis(pin);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ünvan tapılmadı. Daha dəqiq yazın.')),
+        SnackBar(content: Text(AppLocalizations.of(context).t('addressNotFound'))),
       );
     } finally {
       if (mounted) setState(() => _isSearching = false);
@@ -1998,9 +2088,9 @@ class _MapScreenState extends State<MapScreen> {
               onSubmitted: (_) => _searchAddress(),
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search),
-                hintText: 'Şəhər və ya ünvan axtar...',
+                hintText: loc.t('searchAddressHint'),
                 suffixIcon: IconButton(
-                  tooltip: 'Axtar',
+                  tooltip: loc.t('search'),
                   onPressed: _isSearching ? null : _searchAddress,
                   icon: const Icon(Icons.arrow_forward),
                 ),
@@ -2021,19 +2111,30 @@ class _MapScreenState extends State<MapScreen> {
                 child: Row(
                   children: [
                     _Metric(
-                      label: 'Məkan indeksi',
-                      value: '7.8/10',
+                      label: loc.t('locationIndex'),
+                      value: _analysis?['score'] == null
+                          ? '--'
+                          : '${_analysis!['score']}/100',
                       color: scheme.primary,
                     ),
                     _Metric(
-                      label: 'Piyada trafiki',
-                      value: 'Yüksək',
+                      label: loc.t('footTraffic'),
+                      value: _isAnalyzing
+                          ? loc.t('analyzing')
+                          : (_analysis?['pedestrian_traffic'] ?? '--').toString(),
                       color: AppColors.secondary,
                     ),
                     _Metric(
-                      label: 'Rəqiblər (500 m)',
-                      value: '6',
+                      label: loc.t('competitors'),
+                      value: (_analysis?['competitors_500m'] ?? '--').toString(),
                       color: const Color(0xFFF59E0B),
+                    ),
+                    _Metric(
+                      label: loc.t('nearestDistance'),
+                      value: _analysis?['nearest_competitor_meters'] == null
+                          ? '--'
+                          : '${_analysis!['nearest_competitor_meters']} m',
+                      color: scheme.primary,
                     ),
                   ],
                 ),
@@ -2083,10 +2184,10 @@ class _MapScreenState extends State<MapScreen> {
                         onTap: (_, __) => setState(() => _selected = null),
                       ),
                       children: [
-                        // OpenStreetMap — free, no API key required.
                         TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          urlTemplate: ApiConfig.twoGisKey.isEmpty
+                              ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+                              : 'https://tile1.maps.2gis.com/tiles?key=${ApiConfig.twoGisKey}&ts=online_hd&v=1&layer=map&x={x}&y={y}&z={z}',
                           userAgentPackageName: 'com.aibusinessagent.app',
                           maxZoom: 19,
                         ),
@@ -2242,7 +2343,7 @@ class _MapScreenState extends State<MapScreen> {
                                   ),
                                 ),
                                 IconButton(
-                                  tooltip: 'PDF Məkan Pasportu',
+                                  tooltip: loc.t('locationPassport'),
                                   onPressed: () =>
                                       ReportService().printLocationPassport(
                                         address: _selected!.name,
@@ -2259,7 +2360,7 @@ class _MapScreenState extends State<MapScreen> {
                                   ),
                                 ),
                                 IconButton(
-                                  tooltip: 'WhatsApp danışıqlar mətni',
+                                  tooltip: loc.t('whatsappNegotiation'),
                                   onPressed: () =>
                                       _openWhatsApp(_selected!.name),
                                   icon: const Icon(Icons.chat_outlined),
@@ -2358,8 +2459,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<_ChatMessage> _messages = [
     const _ChatMessage(
       author: 'assistant',
-      text:
-          'Salam! Mən Müdrik Baba — biznes ideyanı və seçdiyin məkanı üç faktorlu yoxlama ilə analiz edəcəyəm. Başlayaq: hansı biznesi açmaq istəyirsən və hansı şəhərdə?',
+      text: '',
     ),
   ];
   bool _isSending = false;
@@ -2368,25 +2468,36 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isListening = false;
   String _selectedPersona = 'Baba';
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_messages.length == 1) {
+      _messages[0] = _ChatMessage(
+        author: 'assistant',
+        text: AppLocalizations.of(context).t('assistantWelcome'),
+      );
+    }
+  }
+
   static const _personas = [
     (
       'Baba',
-      'Müdrik Baba',
-      'Riskləri azaldır',
+      'personaBaba',
+      'personaBabaHint',
       Icons.shield_outlined,
       Color(0xFF14B8A6),
     ),
     (
       'Marketoloq',
-      'Kreativ Marketoloq',
-      'Fərqlənməyə kömək edir',
+      'personaMarketer',
+      'personaMarketerHint',
       Icons.auto_awesome_outlined,
       Color(0xFFEC4899),
     ),
     (
       'Analitik',
-      'Sərt Analitik',
-      'Quru rəqəmlər və ROI',
+      'personaAnalyst',
+      'personaAnalystHint',
       Icons.bar_chart_outlined,
       Color(0xFF4F46E5),
     ),
@@ -2510,7 +2621,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         Icon(persona.$4, color: persona.$5, size: 22),
                         const SizedBox(height: 5),
                         Text(
-                          persona.$2,
+                          loc.t(persona.$2),
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -2519,7 +2630,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          persona.$3,
+                          loc.t(persona.$3),
                           style: TextStyle(
                             fontSize: 10,
                             color: Theme.of(context).colorScheme.outline,
@@ -2653,7 +2764,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const SizedBox(width: 8),
                 IconButton.filledTonal(
-                  tooltip: _isListening ? 'Dinləməni dayandır' : 'Səslə yaz',
+                    tooltip: _isListening
+                      ? loc.t('stopListening')
+                      : loc.t('voiceInput'),
                   onPressed: _toggleListening,
                   icon: Icon(
                     _isListening ? Icons.stop : Icons.mic_none_rounded,
@@ -2776,7 +2889,7 @@ class ProfileScreen extends StatelessWidget {
                   icon: Icons.security_outlined,
                   color: const Color(0xFFF59E0B),
                   title: loc.t('profileOtpDelivery'),
-                  subtitle: 'SMS, Email, WhatsApp',
+                  subtitle: loc.t('smsEmailWhatsapp'),
                 ),
               ],
             ),
@@ -2860,6 +2973,8 @@ class _SettingsRow extends StatelessWidget {
 
 String _languageName(String code) {
   switch (code) {
+    case 'en':
+      return 'English';
     case 'ru':
       return 'Русский';
     case 'kk':
@@ -2886,6 +3001,15 @@ void _showLanguagePicker(
             trailing: currentCode == 'az' ? const Icon(Icons.check) : null,
             onTap: () {
               onChanged(const Locale('az'));
+              Navigator.pop(sheetContext);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.language),
+            title: const Text('English'),
+            trailing: currentCode == 'en' ? const Icon(Icons.check) : null,
+            onTap: () {
+              onChanged(const Locale('en'));
               Navigator.pop(sheetContext);
             },
           ),

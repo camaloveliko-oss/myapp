@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: ai-business-agent-api
+    runtime: node
+    rootDir: AI-business-agent-flutter-app-main/backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AI_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TWOGIS_API_KEY
+        sync: false

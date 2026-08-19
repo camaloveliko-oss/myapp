@@ -30,6 +30,35 @@ npm install
 cp .env.example .env
 ```
 
+## Local auth server
+
+MongoDB must be running before starting this server. Fill `MONGODB_URI` and
+`JWT_SECRET` in `.env`, then run:
+
+```bash
+npm install
+npm start
+curl http://127.0.0.1:5000/health
+```
+
+The health response must contain `"status":"ok"` before login/register can
+work. A `503` response means the Node server is running but MongoDB is not
+connected yet.
+
+## Deploy the auth backend
+
+The repository includes `backend/render.yaml` for Render. Create a MongoDB
+Atlas database, create a Render Blueprint from this repository, and set the
+secret `MONGODB_URI`, `GEMINI_API_KEY`, and `TWOGIS_API_KEY` values in Render.
+After deployment, verify `https://YOUR-SERVICE.onrender.com/health`, then build
+Flutter with the public Node URL:
+
+```bash
+flutter build apk --dart-define=BACKEND_URL=https://YOUR-SERVICE.onrender.com
+```
+
+Do not use `127.0.0.1` or `localhost` in a mobile production build.
+
 3. **Configure environment variables**
 ```
 MONGODB_URI=mongodb://localhost:27017/ai-business-agent

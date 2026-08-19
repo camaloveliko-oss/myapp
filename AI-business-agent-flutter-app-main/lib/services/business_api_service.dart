@@ -20,6 +20,18 @@ class BusinessApiService {
     });
   }
 
+  Future<Map<String, dynamic>> analyze2GisLocation({
+    required String city,
+    required String businessType,
+    String address = '',
+  }) {
+    return analyzeLocation(
+      city: city,
+      businessType: businessType,
+      address: address,
+    );
+  }
+
   Future<Map<String, dynamic>> calculateRoi({
     required double rent,
     required double averageTicket,

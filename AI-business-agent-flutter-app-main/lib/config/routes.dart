@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// App Routes Configuration
 class AppRoutes {
   static const String login = '/login';

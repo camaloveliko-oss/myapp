@@ -32,9 +32,11 @@ mongoose
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'Server is running',
+  const databaseReady = mongoose.connection.readyState === 1;
+  res.status(databaseReady ? 200 : 503).json({
+    status: databaseReady ? 'ok' : 'starting',
+    database: databaseReady ? 'connected' : 'disconnected',
+    message: databaseReady ? 'Server is ready' : 'Waiting for MongoDB',
   });
 });
 

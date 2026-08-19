@@ -39,7 +39,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # Free, no-API-key map (OpenStreetMap tiles) used on the Map screen.
+  # Map rendering; production builds use 2GIS tiles via TWOGIS_API_KEY.
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   url_launcher: ^6.3.1

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
+import math
 import httpx
 
 load_dotenv()
@@ -37,6 +38,45 @@ class RoiRequest(BaseModel):
 class NegotiationRequest(BaseModel):
     address: str
     risks: list[str] = []
+
+
+TWOGIS_ITEMS_URL = "https://catalog.api.2gis.com/3.0/items"
+
+
+def _distance_meters(first: tuple[float, float], second: tuple[float, float]) -> float:
+    latitude_one, longitude_one = map(math.radians, first)
+    latitude_two, longitude_two = map(math.radians, second)
+    delta_latitude = latitude_two - latitude_one
+    delta_longitude = longitude_two - longitude_one
+    value = (
+        math.sin(delta_latitude / 2) ** 2
+        + math.cos(latitude_one)
+        * math.cos(latitude_two)
+        * math.sin(delta_longitude / 2) ** 2
+    )
+    return 6_371_000 * 2 * math.atan2(math.sqrt(value), math.sqrt(1 - value))
+
+
+def _point(item: dict) -> tuple[float, float] | None:
+    point = item.get("point") or {}
+    try:
+        return float(point["lat"]), float(point["lon"])
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def _two_gis_items(query: str, *, point: tuple[float, float] | None = None, radius: int | None = None) -> list[dict]:
+    api_key = os.getenv("TWOGIS_API_KEY")
+    if not api_key:
+        raise RuntimeError("TWOGIS_API_KEY is not configured")
+    params = {"key": api_key, "q": query, "page_size": 50, "fields": "items.point,items.rubrics"}
+    if point:
+        params["point"] = f"{point[1]},{point[0]}"
+    if radius:
+        params["radius"] = radius
+    response = httpx.get(TWOGIS_ITEMS_URL, params=params, timeout=15)
+    response.raise_for_status()
+    return response.json().get("result", {}).get("items", [])
 
 
 @app.get("/health")
@@ -83,16 +123,41 @@ def chat(payload: ChatRequest | None = None, prompt: str | None = None):
 
 @app.post("/analysis/location")
 def location_analysis(payload: LocationAnalysisRequest):
+    search = payload.address.strip() or payload.city.strip()
+    locations = _two_gis_items(search)
+    if not locations or not _point(locations[0]):
+        return {"error": "2GIS could not resolve this location"}
+
+    selected_point = _point(locations[0])
+    assert selected_point is not None
+    competitors = _two_gis_items(payload.business_type.strip() or "business", point=selected_point, radius=500)
+    distances = [
+        _distance_meters(selected_point, competitor_point)
+        for competitor in competitors
+        if (competitor_point := _point(competitor)) is not None
+    ]
+    competitor_count = len(distances)
+    nearest_distance = round(min(distances)) if distances else None
+    density = min(100, competitor_count * 10)
+    location_score = round(max(0, 82 - density * 0.35), 1)
+    traffic_score = round(min(100, 35 + competitor_count * 5), 1)
     return {
+        "provider": "2gis",
         "city": payload.city,
         "business_type": payload.business_type,
-        "address": payload.address,
-        "score": 7.8,
-        "survival_rate": 68,
-        "pedestrian_traffic": "high",
-        "competitors_500m": 6,
-        "risks": ["Rəqib sıxlığı yenidən yoxlanmalıdır", "Mövsümi trafik dəyişə bilər"],
-        "verdict": "Məkan ilkin mərhələ üçün uyğundur.",
+        "address": payload.address or locations[0].get("name", search),
+        "coordinates": {"lat": selected_point[0], "lon": selected_point[1]},
+        "score": location_score,
+        "survival_rate": round(location_score * 0.9),
+        "pedestrian_traffic": "high" if traffic_score >= 70 else "medium" if traffic_score >= 45 else "low",
+        "pedestrian_traffic_score": traffic_score,
+        "competitors_500m": competitor_count,
+        "nearest_competitor_meters": nearest_distance,
+        "risks": [
+            "Rəqib sıxlığı yüksəkdir" if competitor_count >= 8 else "Rəqib sıxlığı idarəolunandır",
+            "Piyada axını 2GIS obyekt sıxlığı əsasında proqnozlaşdırılıb",
+        ],
+        "verdict": "Məkan ilkin mərhələ üçün uyğundur." if location_score >= 60 else "Məkan əlavə yoxlama tələb edir.",
     }
 
 

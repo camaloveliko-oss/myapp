@@ -5,22 +5,21 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ai_business_agent/main.dart';
 
 void main() {
-  testWidgets('shows the Kazakhstan map experience', (tester) async {
+  testWidgets('opens the assistant after guest access', (tester) async {
     await tester.pumpWidget(const AiBusinessAgentApp());
 
-    await tester.enterText(find.byType(TextField).first, 'demo');
-    await tester.enterText(find.byType(TextField).last, 'demo');
-    await tester.tap(find.byKey(const Key('login_button')));
+    final guestButton = find.text('Qonaq kimi davam et');
+    await tester.ensureVisible(guestButton);
+    await tester.tap(guestButton);
     await tester.pumpAndSettle();
 
     expect(find.text('AI Business Agent'), findsWidgets);
-    expect(find.text('Astana'), findsOneWidget);
-    expect(find.text('Map'), findsOneWidget);
+    expect(find.text('Assistant'), findsOneWidget);
+    expect(find.textContaining('Salam! Mən Müdrik Baba'), findsOneWidget);
   });
 }
