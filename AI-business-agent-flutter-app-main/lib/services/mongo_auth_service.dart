@@ -14,9 +14,9 @@ class AuthException implements Exception {
 class MongoAuthService {
   MongoAuthService({http.Client? client}) : _client = client ?? http.Client();
   final http.Client _client;
-  
+
   String? _token;
-  
+
   String? get token => _token;
   bool get isAuthenticated => _token != null;
 
@@ -29,15 +29,15 @@ class MongoAuthService {
     String? phone,
   }) async {
     if (ApiConfig.backendUrl.isEmpty) {
-      throw const AuthException('Backend URL təyin edilməyib. API_CONFIG-u yeniləyin.');
+      throw const AuthException(
+        'Backend URL təyin edilməyib. API_CONFIG-u yeniləyin.',
+      );
     }
 
     try {
       final response = await _client.post(
         Uri.parse('${ApiConfig.backendUrl}/auth/signup'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'name': name,
           'email': email,
@@ -57,6 +57,10 @@ class MongoAuthService {
       } else {
         throw AuthException('Qeydiyyat xətası: ${response.statusCode}');
       }
+    } on AuthException {
+      rethrow;
+    } on http.ClientException catch (e) {
+      throw AuthException('Backendə qoşulmaq mümkün olmadı: $e');
     } catch (e) {
       throw AuthException('Qeydiyyat xətası: $e');
     }
@@ -68,19 +72,16 @@ class MongoAuthService {
     required String password,
   }) async {
     if (ApiConfig.backendUrl.isEmpty) {
-      throw const AuthException('Backend URL təyin edilməyib. API_CONFIG-u yeniləyin.');
+      throw const AuthException(
+        'Backend URL təyin edilməyib. API_CONFIG-u yeniləyin.',
+      );
     }
 
     try {
       final response = await _client.post(
         Uri.parse('${ApiConfig.backendUrl}/auth/login'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
       if (response.statusCode == 200) {
@@ -92,6 +93,10 @@ class MongoAuthService {
       } else {
         throw AuthException('Giriş xətası: ${response.statusCode}');
       }
+    } on AuthException {
+      rethrow;
+    } on http.ClientException catch (e) {
+      throw AuthException('Backendə qoşulmaq mümkün olmadı: $e');
     } catch (e) {
       throw AuthException('Giriş xətası: $e');
     }

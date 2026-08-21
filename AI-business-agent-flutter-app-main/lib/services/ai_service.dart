@@ -39,13 +39,29 @@ class AiService {
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
         if (decoded is Map<String, dynamic>) {
-          return decoded['message']?.toString() ?? decoded['response']?.toString() ?? 'No response received.';
+          return decoded['message']?.toString() ??
+              decoded['response']?.toString() ??
+              'No response received.';
         }
         return decoded.toString();
       } else if (response.statusCode == 401) {
         return 'Session expired. Please login again.';
       }
-      return 'Error: ${response.statusCode}';
+      try {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          final message = decoded['message']?.toString();
+          final error = decoded['error']?.toString();
+          if (message != null && message.isNotEmpty) {
+            return error == null || error.isEmpty
+                ? message
+                : '$message: $error';
+          }
+        }
+      } catch (_) {
+        // Fall through to the status code when the server did not return JSON.
+      }
+      return 'AI server xətası (${response.statusCode})';
     } catch (e) {
       return 'AI serverə qoşulmaq mümkün olmadı: $e';
     }
